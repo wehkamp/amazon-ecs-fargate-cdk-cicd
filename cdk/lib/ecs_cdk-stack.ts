@@ -59,6 +59,7 @@ export class EcsCdkStack extends cdk.Stack {
     });
 
     const taskDef = new ecs.FargateTaskDefinition(this, "ecs-taskdef", {
+      cpu: 256,
       taskRole: taskRole
     });
 
@@ -84,12 +85,16 @@ export class EcsCdkStack extends cdk.Stack {
       listenerPort: 80
     });
 
-    fargateService.targetGroup.configureHealthCheck({
+    const targetGroup = fargateService.targetGroup;
+    
+    targetGroup.configureHealthCheck({
       interval: cdk.Duration.seconds(5),
       timeout: cdk.Duration.seconds(4),
       healthyThresholdCount: 2,
       unhealthyThresholdCount: 2,
     });
+
+    targetGroup.setAttribute('deregistration_delay.timeout_seconds', '5');
 
     const scaling = fargateService.service.autoScaleTaskCount({ maxCapacity: 2 });
     scaling.scaleOnCpuUtilization('CpuScaling', {
