@@ -84,6 +84,13 @@ export class EcsCdkStack extends cdk.Stack {
       listenerPort: 80
     });
 
+    fargateService.targetGroup.configureHealthCheck({
+      interval: cdk.Duration.seconds(5),
+      timeout: cdk.Duration.seconds(4),
+      healthyThresholdCount: 2,
+      unhealthyThresholdCount: 2,
+    });
+
     const scaling = fargateService.service.autoScaleTaskCount({ maxCapacity: 2 });
     scaling.scaleOnCpuUtilization('CpuScaling', {
       targetUtilizationPercent: 10,
@@ -181,10 +188,6 @@ export class EcsCdkStack extends cdk.Stack {
       outputs: [buildOutput], // optional
     });
 
-    const manualApprovalAction = new codepipeline_actions.ManualApprovalAction({
-      actionName: 'Approve',
-    });
-
     const deployAction = new codepipeline_actions.EcsDeployAction({
       actionName: 'DeployAction',
       service: fargateService.service,
@@ -204,10 +207,6 @@ export class EcsCdkStack extends cdk.Stack {
         {
           stageName: 'Build',
           actions: [buildAction],
-        },
-        {
-          stageName: 'Approve',
-          actions: [manualApprovalAction],
         },
         {
           stageName: 'Deploy-to-ECS',
