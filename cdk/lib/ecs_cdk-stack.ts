@@ -80,15 +80,15 @@ export class EcsCdkStack extends cdk.Stack {
       cluster: cluster,
       taskDefinition: taskDef,
       publicLoadBalancer: true,
-      desiredCount: 3,
+      desiredCount: 1,
       listenerPort: 80
     });
 
-    const scaling = fargateService.service.autoScaleTaskCount({ maxCapacity: 6 });
+    const scaling = fargateService.service.autoScaleTaskCount({ maxCapacity: 2 });
     scaling.scaleOnCpuUtilization('CpuScaling', {
       targetUtilizationPercent: 10,
-      scaleInCooldown: cdk.Duration.seconds(60),
-      scaleOutCooldown: cdk.Duration.seconds(60)
+      scaleInCooldown: cdk.Duration.seconds(10),
+      scaleOutCooldown: cdk.Duration.seconds(10)
     });
 
 
